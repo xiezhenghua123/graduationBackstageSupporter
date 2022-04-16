@@ -4,12 +4,15 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-09 20:10:18
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-14 14:15:39
+ * @LastEditTime: 2022-04-15 13:54:51
  */
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router/index'
 import store from './store/index'
+
+import message from '@/message/index'
+Vue.prototype.$message = message
 
 import api from './api'
 Vue.prototype.$api = api

@@ -1,11 +1,20 @@
+/*
+ * @Descripttion:
+ * @version:
+ * @Author: ZhenghuaXie
+ * @Date: 2022-04-09 20:10:18
+ * @LastEditors: ZhenghuaXie
+ * @LastEditTime: 2022-04-15 20:00:46
+ */
 import axios from 'axios'
 // import Qs from 'qs'
 import router from '@/router/index'
 import store from '@/store/index'
-import { Message } from 'element-ui'
+// import { Message } from 'element-ui'
+import toastr from '@/message/toastr'
 
 const toLogin = () => {
-  router.push({
+  router.replace({
     path: '/login',
     query: {
       redirect: router.currentRoute.fullPath
@@ -58,7 +67,8 @@ api.interceptors.response.use(
       if (response.data.status == 0) {
         toLogin()
       }
-      Message.error(response.data.error)
+      // Message.error(response.data.error)
+      toastr.error(response.data.error)
       return Promise.reject(response.data)
     }
     return Promise.resolve(response.data)

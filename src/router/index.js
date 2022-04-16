@@ -73,6 +73,7 @@ import complaintsReview from './modules/complaints-review' // 投诉审核
 import dataStatistics from './modules/data-statistics' // 数据统计
 import positionManagement from './modules/position-management' // 职位管理
 import userFeedback from './modules/user-feedback' // 用户意见反馈
+// import userManagement from './modules/user-management' // 用户管理
 
 // 当 children 不为空的主导航只有一项时，则隐藏
 let asyncRoutes = [
@@ -83,17 +84,20 @@ let asyncRoutes = [
     },
     children: [
       dataStatistics,
+      // userManagement,
       certificationAudit,
       positionManagement,
       complaintsReview,
       advertisingManagement,
       userFeedback
+
     ]
   }
 ]
 
 // 将路由添加到主路由
 constantRoutes[1].children.push(dataStatistics,
+  // , userManagement,
   certificationAudit,
   positionManagement,
   complaintsReview,

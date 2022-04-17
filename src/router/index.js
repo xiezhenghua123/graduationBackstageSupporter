@@ -143,9 +143,9 @@ router.beforeEach(async(to, from, next) => {
       currentPath: to.path
     })
     accessRoutes.push(...lastRoute)
-    // accessRoutes.forEach(route => {
-    //   router.addRoute(route)
-    // })
+    accessRoutes.forEach(route => {
+      router.addRoute(route)
+    })
     next({ ...to, replace: true })
   }
   if (store.state.menu.isGenerate) {
@@ -172,6 +172,7 @@ router.beforeEach(async(to, from, next) => {
         }
       } else {
         // 如果是通过 name 跳转，并且 name 对应的路由没有权限时，需要做这步处理，手动指向到 404 页面
+        console.log(12)
         next({
           path: '/404'
         })

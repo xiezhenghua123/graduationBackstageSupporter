@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-10 12:47:12
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-12 14:31:16
+ * @LastEditTime: 2022-04-17 21:48:40
 -->
 <template>
   <router-link v-slot="{ navigate }" custom :to="to" :class="{
@@ -70,6 +70,8 @@ export default {
   .logo {
     width: 30px;
     height: 30px;
+    border-radius: 50%;
+    background: #ccc;
     & + span {
       margin-left: 10px;
     }

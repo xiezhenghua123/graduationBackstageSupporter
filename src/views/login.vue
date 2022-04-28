@@ -67,6 +67,7 @@
 </template>
 
 <script>
+import {toast} from '@/message/index'
 export default {
   name: 'Login',
   data() {
@@ -109,14 +110,19 @@ export default {
         if (valid) {
           this.loading = true
           this.$store
-            .dispatch('user/login', this.form)
+            .dispatch('user/login', {phone: this.form.account, password: this.form.password})
             .then(() => {
+              toast.success('登录成功！')
               this.loading = false
-              this.form.remember &&
+              if (this.form.remember) {
                 localStorage.setItem('login_account', this.form.account)
+              } else {
+                localStorage.removeItem('login_account')
+              }
               this.$router.push({ path: this.redirect || '/' })
             })
             .catch(() => {
+              toast.error('账号或密码错误！')
               this.loading = false
             })
         }

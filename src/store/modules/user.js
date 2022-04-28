@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-09 20:10:18
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-14 13:14:27
+ * @LastEditTime: 2022-04-27 20:19:43
  */
 import api from '@/api'
 
@@ -19,10 +19,11 @@ const getters = {
   isLogin: state => {
     let retn = false
     if (state.token) {
-      let unix = Date.parse(new Date())
-      if (unix < state.failure_time * 1000) {
-        retn = true
-      }
+      // let unix = Date.parse(new Date())
+      // if (unix < state.failure_time * 1000) {
+      //   retn = true
+      // }
+      retn = true
     }
     return retn
   }
@@ -32,8 +33,8 @@ const actions = {
   login({commit}, data) {
     return new Promise((resolve, reject) => {
       // 通过 mock 进行登录
-      api.post('mock/member/login', data).then(res => {
-        commit('setUserData', res.data)
+      api({}).post('manager/login', data).then(res => {
+        commit('setUserData', {account: data.phone, password: data.password, token: res.token})
         resolve()
       }).catch(error => {
         reject(error)
@@ -64,10 +65,10 @@ const mutations = {
   setUserData(state, data) {
     localStorage.setItem('account', data.account)
     localStorage.setItem('token', data.token)
-    localStorage.setItem('failure_time', data.failure_time)
+    // localStorage.setItem('failure_time', data.failure_time)
     state.account = data.account
     state.token = data.token
-    state.failure_time = data.failure_time
+    // state.failure_time = data.failure_time
   },
   removeUserData(state) {
     localStorage.removeItem('account')

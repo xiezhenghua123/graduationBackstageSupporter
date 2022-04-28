@@ -16,10 +16,10 @@
       <div class="title">订单交易量</div>
       <div ref="orderSuccess" class="orderSuccess number">{{ data.orderSuccess }}</div>
     </div>
-    <div class="box">
+    <!-- <div class="box">
       <div class="title">退还押金数额(元)</div>
       <div ref="depositRefund" class="depositRefund number">{{ data.depositRefund }}</div>
-    </div>
+    </div> -->
     <div class="box">
       <div class="title">营收数额(元)</div>
       <div ref="revenue" class="revenue number">{{ data.revenue }}</div>
@@ -28,23 +28,23 @@
 </template>
 <script>
 import countUp from 'countup'
-import { getStatisticsData } from '@/api/commonApi.js'
+// import { getStatisticsData } from '@/api/commonApi.js'
 export default {
   data() {
     return {
       data: {
-        register: 0,
-        orderSuccess: 0,
-        depositRefund: 0,
+        register: 100,
+        orderSuccess: 10,
         revenue: 0
       }
     }
   },
   mounted() {
-    getStatisticsData().then(data => {
-      this.data = data.data
-      this.countUp()
-    })
+    // getStatisticsData().then(data => {
+    //   this.data = data.data
+
+    // })
+    this.countUp()
   },
   methods: {
     countUp() {

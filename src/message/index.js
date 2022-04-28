@@ -4,10 +4,8 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-15 13:51:12
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-15 13:53:34
+ * @LastEditTime: 2022-04-27 20:09:16
  */
-import toastr from './toastr.js'
+import toast from './toast.js'
 
-export default {
-  toastr
-}
+export {toast}

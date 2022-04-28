@@ -4,14 +4,16 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-09 20:10:18
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-15 20:00:46
+ * @LastEditTime: 2022-04-27 20:26:16
  */
 import axios from 'axios'
 // import Qs from 'qs'
 import router from '@/router/index'
 import store from '@/store/index'
 // import { Message } from 'element-ui'
-import toastr from '@/message/toastr'
+import NProgress from '@/util/progress/index.js'
+import qs from 'qs'
+import {toast} from '@/message/index'
 
 const toLogin = () => {
   router.replace({
@@ -22,60 +24,68 @@ const toLogin = () => {
   })
 }
 
-const api = axios.create({
+const baseConfig = {
   baseURL: process.env.VUE_APP_API_ROOT,
-  timeout: 10000,
-  responseType: 'json'
-  // withCredentials: true
-})
-
-api.interceptors.request.use(
-  request => {
-    if (request.method == 'post') {
-      if (request.data instanceof FormData) {
-        if (store.getters['user/isLogin']) {
-          // 如果是 FormData 类型（上传图片）
-          request.data.append('token', store.state.user.token)
-        }
-      } else {
-        // 带上 token
-        if (request.data == undefined) {
-          request.data = {}
-        }
-        if (store.getters['user/isLogin']) {
-          request.data.token = store.state.user.token
-        }
-        // request.data = Qs.stringify(request.data)
-      }
-    } else {
-      // 带上 token
-      if (request.params == undefined) {
-        request.params = {}
-      }
-      if (store.getters['user/isLogin']) {
-        request.params.token = store.state.user.token
-      }
-    }
-    return request
-  }
-)
-
-api.interceptors.response.use(
-  response => {
-    if (response.data.error != '') {
-      // 如果接口请求时发现 token 失效，则立马跳转到登录页
-      if (response.data.status == 0) {
-        toLogin()
-      }
-      // Message.error(response.data.error)
-      toastr.error(response.data.error)
-      return Promise.reject(response.data)
-    }
-    return Promise.resolve(response.data)
+  headers: {
+    Accept: 'application/json, text/plain, */*',
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
   },
-  error => {
-    return Promise.reject(error)
-  }
-)
+  paramsSerializer: params => qs.stringify(params, { indices: false }),
+  timeout: 60000
+}
 
+const setInterceptors = instance => {
+  instance.interceptors.request.use(requestInterceptors, error => {
+    return Promise.reject(error)
+  })
+
+  instance.interceptors.response.use(responseInterceptors, error => {
+    return Promise.reject(error)
+  })
+}
+
+const requestInterceptors = config => {
+  NProgress.start()
+  config.headers['Authorization'] = 'Bearer ' + store.state.user.token
+  return config
+}
+
+const responseInterceptors = response => {
+  // 需要检查code的接口
+  // const repx = /\/login/
+  // if (repx.test(response.config.url)) {
+  //   return response.data
+  // }
+  NProgress.done()
+  if (response.data.data == '登录失效') {
+    toast.error('登录失效,请重新登录')
+    toLogin()
+    return Promise.reject(response.data)
+  }
+  if (response.data.code != 0) {
+    // console.log(response.data.status)
+    // toast.error(response.data.status)
+    return Promise.reject(response.data)
+  }
+  return response.data.data
+}
+
+const api = req => {
+  // if (!req) {
+  //   return new Error('请传req参数！')
+  // }
+  let options = { ...baseConfig  }
+  if (req) {
+    options = { ...baseConfig, ...req }
+  }
+  // if (req.headers) {
+  //   for (let item in req.headers) {
+  //     options.headers[item] = req.headers[item]
+  //   }
+  // }
+  const instance = axios.create(options)
+  setInterceptors(instance)
+  return instance
+}
 export default api

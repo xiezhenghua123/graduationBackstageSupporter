@@ -1,20 +1,30 @@
 <template>
   <div class="layout">
-    <div id="app-main" :style="{
-      '--real-sidebar-width': realSidebarWidth
-    }"
+    <div
+      id="app-main"
+      :style="{
+        '--real-sidebar-width': realSidebarWidth
+      }"
     >
-      <header v-if="$store.state.settings.mode == 'pc' && $store.state.settings.showHeader">
+      <header
+        v-if="
+          $store.state.settings.mode == 'pc' && $store.state.settings.showHeader
+        "
+      >
         <div class="header-container">
           <div class="main">
             <Logo />
             <!-- 当头部导航大于 1 个的时候才会显示 -->
             <div v-if="$store.state.menu.routes.length > 1" class="nav">
               <template v-for="(item, index) in $store.state.menu.routes">
-                <div v-if="item.children && item.children.length !== 0" :key="index" :class="{
-                  'item': true,
-                  'active': index == $store.state.menu.headerActived
-                }" @click="$store.commit('menu/switchHeaderActived', index)"
+                <div
+                  v-if="item.children && item.children.length !== 0"
+                  :key="index"
+                  :class="{
+                    item: true,
+                    active: index == $store.state.menu.headerActived
+                  }"
+                  @click="$store.commit('menu/switchHeaderActived', index)"
                 >
                   <svg-icon v-if="item.meta.icon" :name="item.meta.icon" />
                   <span v-if="item.meta.title">{{ item.meta.title }}</span>
@@ -26,19 +36,35 @@
         </div>
       </header>
       <div class="wrapper">
-        <div :class="{
-          'sidebar-container': true,
-          'show': $store.state.settings.mode == 'mobile' && !$store.state.settings.sidebarCollapse
-        }"
+        <div
+          :class="{
+            'sidebar-container': true,
+            show:
+              $store.state.settings.mode == 'mobile' &&
+              !$store.state.settings.sidebarCollapse
+          }"
         >
-          <div v-if="(!$store.state.settings.showHeader || $store.state.settings.mode == 'mobile') && ($store.state.menu.routes.length > 1 || $store.state.settings.alwaysShowMainSidebar)" class="main-sidebar-container">
+          <div
+            v-if="
+              (!$store.state.settings.showHeader ||
+                $store.state.settings.mode == 'mobile') &&
+                ($store.state.menu.routes.length > 1 ||
+                  $store.state.settings.alwaysShowMainSidebar)
+            "
+            class="main-sidebar-container"
+          >
             <Logo :show-title="false" class="sidebar-logo" />
             <div class="nav">
               <template v-for="(item, index) in $store.state.menu.routes">
-                <div v-if="item.children && item.children.length !== 0" :key="index" :class="{
-                  'item': true,
-                  'active': index == $store.state.menu.headerActived
-                }" :title="item.meta.title" @click="$store.commit('menu/switchHeaderActived', index)"
+                <div
+                  v-if="item.children && item.children.length !== 0"
+                  :key="index"
+                  :class="{
+                    item: true,
+                    active: index == $store.state.menu.headerActived
+                  }"
+                  :title="item.meta.title"
+                  @click="$store.commit('menu/switchHeaderActived', index)"
                 >
                   <svg-icon v-if="item.meta.icon" :name="item.meta.icon" />
                   <span>{{ item.meta.title }}</span>
@@ -46,39 +72,76 @@
               </template>
             </div>
           </div>
-          <div :class="{
-            'sub-sidebar-container': true,
-            'is-collapse': $store.state.settings.mode == 'pc' && $store.state.settings.sidebarCollapse
-          }" @scroll="onSidebarScroll"
+          <div
+            :class="{
+              'sub-sidebar-container': true,
+              'is-collapse':
+                $store.state.settings.mode == 'pc' &&
+                $store.state.settings.sidebarCollapse
+            }"
+            @scroll="onSidebarScroll"
           >
-            <Logo :show-logo="$store.state.menu.routes.length <= 1 && !$store.state.settings.alwaysShowMainSidebar" :class="{
-              'sidebar-logo': true,
-              'sidebar-logo-bg': $store.state.menu.routes.length <= 1 && !$store.state.settings.alwaysShowMainSidebar,
-              'shadow': sidebarScrollTop
-            }"
+            <Logo
+              :show-logo="
+                $store.state.menu.routes.length <= 1 &&
+                  !$store.state.settings.alwaysShowMainSidebar
+              "
+              :class="{
+                'sidebar-logo': true,
+                'sidebar-logo-bg':
+                  $store.state.menu.routes.length <= 1 &&
+                  !$store.state.settings.alwaysShowMainSidebar,
+                shadow: sidebarScrollTop
+              }"
             />
-            <el-menu :background-color="variables.g_sub_sidebar_bg" :text-color="variables.g_sub_sidebar_menu_color" :active-text-color="variables.g_sub_sidebar_menu_active_color" unique-opened :default-active="$route.meta.activeMenu || $route.path" :collapse="$store.state.settings.mode == 'pc' && $store.state.settings.sidebarCollapse" :collapse-transition="false" :class="{
-              'is-collapse-without-logo': $store.state.menu.routes.length > 1 && $store.state.settings.mode == 'pc' && $store.state.settings.sidebarCollapse
-            }"
+            <el-menu
+              :background-color="variables.g_sub_sidebar_bg"
+              :text-color="variables.g_sub_sidebar_menu_color"
+              :active-text-color="variables.g_sub_sidebar_menu_active_color"
+              unique-opened
+              :default-active="$route.meta.activeMenu || $route.path"
+              :collapse="
+                $store.state.settings.mode == 'pc' &&
+                  $store.state.settings.sidebarCollapse
+              "
+              :collapse-transition="false"
+              :class="{
+                'is-collapse-without-logo':
+                  $store.state.menu.routes.length > 1 &&
+                  $store.state.settings.mode == 'pc' &&
+                  $store.state.settings.sidebarCollapse
+              }"
             >
               <transition-group name="sidebar">
                 <template v-for="route in $store.getters['menu/sidebarRoutes']">
-                  <SidebarItem v-if="route.meta.sidebar !== false" :key="route.path" :item="route" :base-path="route.path" />
+                  <SidebarItem
+                    v-if="route.meta.sidebar !== false"
+                    :key="route.path"
+                    :item="route"
+                    :base-path="route.path"
+                  />
                 </template>
               </transition-group>
             </el-menu>
           </div>
         </div>
-        <div :class="{
-          'sidebar-mask': true,
-          'show': $store.state.settings.mode == 'mobile' && !$store.state.settings.sidebarCollapse
-        }" @click="$store.commit('settings/toggleSidebarCollapse')"
+        <div
+          :class="{
+            'sidebar-mask': true,
+            show:
+              $store.state.settings.mode == 'mobile' &&
+              !$store.state.settings.sidebarCollapse
+          }"
+          @click="$store.commit('settings/toggleSidebarCollapse')"
         />
         <div class="main-container">
-          <Topbar :class="{'shadow': scrollTop}" />
+          <Topbar :class="{ shadow: scrollTop }" />
           <div class="main">
             <transition name="main" mode="out-in">
-              <keep-alive v-if="isRouterAlive" :include="$store.state.keepAlive.list">
+              <keep-alive
+                v-if="isRouterAlive"
+                :include="$store.state.keepAlive.list"
+              >
                 <RouterView :key="$route.path" />
               </keep-alive>
             </transition>
@@ -132,7 +195,11 @@ export default {
     realSidebarWidth() {
       let realSidebarWidth = 0
       if (this.$store.state.settings.mode == 'pc') {
-        if (!this.$store.state.settings.showHeader && (this.$store.state.menu.routes.length > 1 || this.$store.state.settings.alwaysShowMainSidebar)) {
+        if (
+          !this.$store.state.settings.showHeader &&
+          (this.$store.state.menu.routes.length > 1 ||
+            this.$store.state.settings.alwaysShowMainSidebar)
+        ) {
           realSidebarWidth = parseInt(variables.g_main_sidebar_width)
         }
         if (this.$store.state.settings.sidebarCollapse) {
@@ -141,7 +208,9 @@ export default {
           realSidebarWidth += parseInt(variables.g_sub_sidebar_width)
         }
       } else {
-        realSidebarWidth = parseInt(variables.g_main_sidebar_width) + parseInt(variables.g_sub_sidebar_width)
+        realSidebarWidth =
+          parseInt(variables.g_main_sidebar_width) +
+          parseInt(variables.g_sub_sidebar_width)
       }
       return `${realSidebarWidth}px`
     }
@@ -196,14 +265,15 @@ export default {
       this.sidebarScrollTop = e.target.scrollTop
     },
     onScroll() {
-      this.scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+      this.scrollTop =
+        document.documentElement.scrollTop || document.body.scrollTop
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-[data-mode=mobile] {
+[data-mode='mobile'] {
   .sidebar-container {
     transition: 0.3s;
     transform: translateX(calc(-1 * #{$g-sidebar-width}));
@@ -448,7 +518,6 @@ header {
     box-shadow: 1px 0 0 0 darken($g-main-bg, 10);
     transition: 0.3s;
     .main {
-      height: 100%;
       flex: auto;
       position: relative;
       padding: $g-topbar-height 0 0;

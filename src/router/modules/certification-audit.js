@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-12 15:22:26
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-15 22:34:08
+ * @LastEditTime: 2022-05-13 20:42:38
  */
 // import Layout from '@/layout'
 import EmptyLayout from '@/layout/empty'
@@ -33,6 +33,15 @@ export default {
       meta: {
         title: '企业管理',
         icon: 'company'
+      }
+    },
+    {
+      path: '/certification-audit/administrator',
+      component: () => import('@/views/certification-audit/administrator'),
+      meta: {
+        title: '管理员管理',
+        icon: 'administrator',
+        auth: ['super']
       }
     }
   ]

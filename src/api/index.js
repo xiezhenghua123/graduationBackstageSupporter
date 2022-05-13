@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-09 20:10:18
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-27 20:26:16
+ * @LastEditTime: 2022-05-13 19:39:20
  */
 import axios from 'axios'
 // import Qs from 'qs'
@@ -13,7 +13,7 @@ import store from '@/store/index'
 // import { Message } from 'element-ui'
 import NProgress from '@/util/progress/index.js'
 import qs from 'qs'
-import {toast} from '@/message/index'
+import { toast } from '@/message/index'
 
 const toLogin = () => {
   router.replace({
@@ -47,7 +47,10 @@ const setInterceptors = instance => {
 
 const requestInterceptors = config => {
   NProgress.start()
-  config.headers['Authorization'] = 'Bearer ' + store.state.user.token
+  if (store.state.user.token) {
+    config.headers['Authorization'] = 'Bearer ' + store.state.user.token
+  }
+
   return config
 }
 
@@ -61,12 +64,13 @@ const responseInterceptors = response => {
   if (response.data.data == '登录失效') {
     toast.error('登录失效,请重新登录')
     toLogin()
-    return Promise.reject(response.data)
+    Promise.reject(response.data)
   }
   if (response.data.code != 0) {
     // console.log(response.data.status)
-    // toast.error(response.data.status)
+    toast.error(response.data.status)
     return Promise.reject(response.data)
+
   }
   return response.data.data
 }
@@ -75,7 +79,7 @@ const api = req => {
   // if (!req) {
   //   return new Error('请传req参数！')
   // }
-  let options = { ...baseConfig  }
+  let options = { ...baseConfig }
   if (req) {
     options = { ...baseConfig, ...req }
   }

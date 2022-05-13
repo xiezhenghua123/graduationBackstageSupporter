@@ -56,7 +56,7 @@ module.exports = {
     publicPath: '',
     productionSourceMap: false,
     devServer: {
-        open: true,
+        // open: true,
         // proxy: {
         //     '/': {
         //         target: process.env.VUE_APP_API_ROOT,

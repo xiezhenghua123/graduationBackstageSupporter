@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-09 20:10:18
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-13 22:03:44
+ * @LastEditTime: 2022-05-13 20:47:14
  */
 let globalSettings = {
   /**
@@ -14,7 +14,7 @@ let globalSettings = {
    * 3、鉴权指令：v-auth、v-auth-all
    * 4、鉴权函数：this.$auth()、this.$authAll()
    */
-  openPermission: false,
+  openPermission: true,
   // 是否显示头部
   showHeader: true,
   // 是否始终显示主侧边栏，设置为 false 且主侧边栏里只有一个导航时，主侧边栏会自动隐藏

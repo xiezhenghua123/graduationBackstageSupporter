@@ -1,116 +1,154 @@
+/* eslint-disable space-before-function-paren */
 <!--
  * @Descripttion:
  * @version:
  * @Author: ZhenghuaXie
  * @Date: 2022-04-15 22:43:55
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-16 11:05:31
+ * @LastEditTime: 2022-05-13 20:53:45
 -->
 <template>
-  <div class="bg-fff">
+  <div class="bg-fff height-100">
     <div class="p-10">
-      <el-table :data="data">
+      <el-table :data="data" :header-cell-style="headerStyle" border>
         <el-table-column label="职位ID" prop="id" />
-        <el-table-column label="招聘者" prop="employer" />
-        <el-table-column label="招聘职位" prop="job" />
-        <el-table-column label="薪酬范围" prop="payMent" />
+        <el-table-column label="企业" prop="employer" />
+        <el-table-column label="标题" prop="content" />
+        <el-table-column label="薪酬" prop="salary" />
+        <el-table-column label="应聘者">
+          <template slot-scope="scope">
+            <el-button
+              type="primary"
+              size="mini"
+              @click="getApplyPerson(scope.row.id)"
+            >
+              查看
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态">
+          <template slot-scope="scope">
+            {{ scope.row.status == 2 ? '进行中' : '已下架' }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
-            <el-button type="primary" size="mini" @click="clickToJobDetails(scope.row.id)">查看职位详情</el-button>
-            <el-button type="danger" size="mini" @click="removeJob(scope.row.id)">删除</el-button>
+            <el-button
+              type="danger"
+              size="mini"
+              :disabled="scope.row.status == 0"
+              @click="removeJob(scope.row)"
+            >
+              {{ scope.row.status == 0?'已下架':'下架' }}
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
+      <div class="mt-10 mb-10 flex" style="justify-content: right;">
+        <el-pagination
+          background
+          layout="total,prev, pager, next"
+          :page-size.sync="limit"
+          :current-page.sync="page"
+          :total="total"
+          @current-change="getList"
+          @prev-click="getList"
+          @next-click="getList"
+        />
+      </div>
     </div>
-    <el-dialog title="职位详情" :visible.sync="dialogTableVisible">
-      <el-table :data="jobDetail" :show-header="false" :cell-style="columnStyle" border>
-        <el-table-column prop="name" />
-        <el-table-column prop="value" />
+    <el-dialog title="应聘者查看" :visible.sync="dialogTableVisible">
+      <el-table :data="applyPerson" border :header-cell-style="headerStyle">
+        <el-table-column prop="worker_name" label="名字" />
+        <el-table-column label="应聘状态">
+          <template #default="scope">
+            <div>{{ getStatus(scope.row.application_order_status) }}</div>
+          </template>
+        </el-table-column>
       </el-table>
     </el-dialog>
   </div>
 </template>
 <script>
-import { getFullTimeJobData, getJobDetail } from '@/api/commonApi'
+// delJob, getApplyPerson
+import { getJobList, getApplyPerson, delJob } from '@/api/jobManage'
 export default {
   data() {
     return {
+      headerStyle: { 'background-color': 'rgba(0,0,0,0.05)' },
       data: [],
-      detail: {},
+      applyPerson: [],
+      page: 1,
+      limit: 10,
+      total: 0,
       dialogTableVisible: false,
-      columnStyle({  columnIndex }) {
-        if (columnIndex == 1) {
-          // 第三第四列的背景色就改变了2和3都是列数的下标
-          return 'background:#f3f6fc;font-weight:bold;'
-        } else {
-          return 'background:#ffffff;'
-        }
+
+      filter: {
+        salary: '',
+        education: ''
       }
-
     }
   },
-  computed: {
-    jobDetail() {
-      return [
-        {
-          name: '招聘者',
-          value: this.detail.employer
-        },
-        {
-          name: '招聘职位',
-          value: this.detail.content
-        }, {
-          name: '职位类型',
-          value: this.detail.type
-        }, {
-          name: '工作地点',
-          value: this.detail.position
-        }, {
-          name: '学历要求',
-          value: this.detail.education
-        }, {
-          name: '薪酬范围',
-          value: this.detail.payMent
-        }, {
-          name: '企业规模',
-          value: this.detail.scale
-        },
-        {
-          name: '岗位要求',
-          value: this.detail.details
-        },
-        {
-          name: '押金金额',
-          value: this.detail.cash
-        },
-        {
-          name: '押金退还',
-          value: this.detail.isCash ? '是' : '否'
-        },
-        {
-          name: '职位状态',
-          value: this.detail.status
-        }
-
-      ]
-    }
-  },
+  computed: {},
   mounted() {
-    getFullTimeJobData().then(data => {
-      this.data = data.data
-    })
+    this.getList()
   },
   methods: {
-    removeJob(id) {
-      console.log(id)
+    getStatus(status) {
+      switch (status) {
+        case '0':
+          return '进行中'
+        case '1':
+          return '已完成'
+        case '2':
+          return '待企业录取'
+        case '3':
+          return '企业已拒绝'
+        case '4':
+          return '已取消应聘'
+      }
     },
-    clickToJobDetails(id) {
-      getJobDetail({id: id, type: 'fullTime'}).then(data => {
+    removeJob(item) {
+      delJob(item.id, { ...item, status: 0 }).then(() => {
+        this.$message({
+          message: '下架成功',
+          type: 'success'
+        })
+        this.getList()
+      })
+    },
+    getApplyPerson(id) {
+      getApplyPerson(id).then(data => {
+        this.applyPerson = data
         this.dialogTableVisible = true
-        this.detail = data.data
+      })
+    },
+    getList() {
+      getJobList(this.page, {
+        ...this.filter,
+        workerId: 'n',
+        type: 'fullTime'
+      }).then(data => {
+        this.data = data.workOrderList.map(item => {
+          console.log(item.salary)
+          return {
+            ...item,
+            salary: `${JSON.parse(item.salary).min}k-${
+              JSON.parse(item.salary).max
+            }k`,
+            employer: item.company_name
+          }
+        })
+        this.total = data.total
+        this.limit = data.limit
       })
     }
+    // clickToJobDetails(id) {
+    //   // getJobDetail({ id: id, type: 'partTime' }).then(data => {
+    //   //   this.dialogTableVisible = true
+    //   //   this.detail = data.data
+    //   // })
+    // }
   }
-
 }
 </script>

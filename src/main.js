@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-09 20:10:18
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-15 13:54:51
+ * @LastEditTime: 2022-04-30 22:48:18
  */
 import Vue from 'vue'
 import App from './App.vue'
@@ -36,6 +36,8 @@ Vue.use(ElementUI)
 import hotkeys from 'hotkeys-js'
 Vue.prototype.$hotkeys = hotkeys
 
+import { Message } from 'element-ui'
+
 // 全局组件自动注册
 import './components/autoRegister'
 
@@ -50,10 +52,10 @@ import './assets/styles/common.scss'
 import './mock'
 
 Vue.config.productionTip = false
+Vue.prototype.$message = Message
 
 Vue.prototype.$eventBus = new Vue({
   router,
   store,
   render: h => h(App)
 }).$mount('#app')
-

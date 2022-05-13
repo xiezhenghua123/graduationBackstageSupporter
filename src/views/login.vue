@@ -122,7 +122,7 @@ export default {
               this.$router.push({ path: this.redirect || '/' })
             })
             .catch(() => {
-              toast.error('账号或密码错误！')
+              // toast.error('账号或密码错误！')
               this.loading = false
             })
         }

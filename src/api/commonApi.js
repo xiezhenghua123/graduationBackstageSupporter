@@ -4,9 +4,22 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-14 12:55:25
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-27 20:21:22
+ * @LastEditTime: 2022-05-10 23:56:52
  */
 import api from './index'
+
+export const imageUpload = data => {
+  const param = new FormData()
+  param.append('image', data)
+  data = param
+  return api().post('/image', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
+
+export const getDataStatistic = () => {
+  return api().get('statistics')
+}
 
 const getStudentAttestationData = () => {
   return new Promise((res, rej) => {

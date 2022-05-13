@@ -4,13 +4,19 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-14 15:48:23
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-28 12:06:22
+ * @LastEditTime: 2022-05-12 19:47:51
 -->
 
 <template>
-  <div class="bg-fff">
+  <div class="bg-fff height-100">
     <div class="pl-10">
-      <el-table :data="data" style="width: 100%;" highlight-current-row>
+      <el-table
+        :data="data"
+        style="width: 100%;"
+        highlight-current-row
+        :header-cell-style="headerStyle"
+        border
+      >
         <el-table-column prop="openid" label="用户ID" />
         <el-table-column prop="name" label="姓名" width="80" />
         <el-table-column prop="uid" label="学号" width="150" />
@@ -38,19 +44,24 @@
               <el-button
                 type="danger"
                 size="small"
-                @click="studentConfirm(scope.row.id, 'failed')"
+                @click="studentConfirm(scope.row, 'failed')"
               >
                 认证失败
               </el-button>
             </div>
             <div v-else>
-              <el-button
-                type="danger"
-                size="small"
-                @click="cancelConfirm(scope.row)"
+              <el-popconfirm
+                title="确认取消该用户的学生身份?"
+                confirm-button-text="确认"
+                cancel-button-text="取消"
+                @confirm="cancelConfirm(scope.row)"
               >
-                取消认证
-              </el-button>
+                <template #reference>
+                  <el-button type="danger" size="small" class="mr-10">
+                    取消认证
+                  </el-button>
+                </template>
+              </el-popconfirm>
               <el-button
                 type="primary"
                 size="small"
@@ -108,12 +119,25 @@
           </el-form-item>
         </el-form>
       </el-dialog>
+      <div class="mt-10 mb-10 flex" style="justify-content: right;">
+        <el-pagination
+          background
+          layout="total,prev, pager, next"
+          :page-size.sync="limit"
+          :current-page.sync="page"
+          :total="total"
+          @current-change="getData"
+          @prev-click="getData"
+          @next-click="getData"
+        />
+      </div>
     </div>
   </div>
 </template>
 <script>
 import { userManageData, conFirm } from '@/api/user.js'
 import { collegeData, majorData } from '@/data/schoolData'
+import { createNotice } from '@/api/notice.js'
 export default {
   data() {
     // 学号自定义规则
@@ -130,7 +154,11 @@ export default {
       callback()
     }
     return {
+      headerStyle: { 'background-color': 'rgba(0,0,0,0.05)' },
       data: [],
+      page: 1,
+      total: 0,
+      limit: 10,
       editData: {},
       collegeData: collegeData,
       majorData: [],
@@ -186,11 +214,16 @@ export default {
     }
   },
   mounted() {
-    userManageData(1, 1).then(data => {
-      this.data = data.gameList
-    })
+    this.getData()
   },
   methods: {
+    getData() {
+      userManageData(1, this.page).then(data => {
+        this.data = data.gameList
+        this.total = data.total
+        this.limit = data.limit
+      })
+    },
     coLlegeChange(val) {
       this.majorData = majorData[val]
       this.editData.major = majorData[val][0]
@@ -199,7 +232,16 @@ export default {
       this.$refs.form.validate(valid => {
         if (valid) {
           this.dialogTableVisible = false
-          console.log('提交')
+          conFirm(this.editData.openid, {
+            ...this.editData,
+            type: 1,
+            uid: this.editData.uid.toString()
+          }).then(() => {
+            this.$message({
+              message: '修改成功',
+              type: 'success'
+            })
+          })
         }
       })
     },
@@ -208,7 +250,7 @@ export default {
       this.editData = { ...data }
     },
     cancelConfirm(scope) {
-      conFirm(scope.openid, { status: 3, type: 1 }).then(() => {
+      conFirm(scope.openid, { ...scope, status: 3, type: 1 }).then(() => {
         scope.status = 3
         this.$message({
           message: '修改成功',
@@ -225,8 +267,10 @@ export default {
             }
           }
         }).then(({ value }) => {
-          conFirm(scope.openid, { content: value, type: 1 }).then(() => {
-            scope.status = 2
+          createNotice({
+            content: JSON.stringify({ content: value, type: 'confirm' }),
+            openid: scope.openid
+          }).then(() => {
             this.$message({
               message: '提交成功',
               type: 'success'
@@ -234,7 +278,7 @@ export default {
           })
         })
       } else {
-        conFirm(scope.openid, { status: 1, type: 1 }).then(() => {
+        conFirm(scope.openid, { ...scope, status: 1, type: 1 }).then(() => {
           scope.status = 1
           this.$message({
             message: '提交成功',

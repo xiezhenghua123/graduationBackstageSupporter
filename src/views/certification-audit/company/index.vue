@@ -4,13 +4,19 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-14 15:48:22
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-28 12:06:06
+ * @LastEditTime: 2022-05-12 19:47:03
 -->
 
 <template>
-  <div class="bg-fff">
+  <div class="bg-fff height-100">
     <div class="pl-10 pr-10">
-      <el-table :data="data" style="width: 100%;" highlight-current-row>
+      <el-table
+        :data="data"
+        style="width: 100%;"
+        highlight-current-row
+        :header-cell-style="headerStyle"
+        border
+      >
         <el-table-column prop="openid" label="用户ID" width="80" />
         <el-table-column prop="name" label="企业名称" width="180" />
         <el-table-column prop="code" label="统一社会信用代码" width="180" />
@@ -40,19 +46,25 @@
               <el-button
                 type="danger"
                 size="small"
-                @click="companyConfirm(scope.row.id, 'failed')"
+                @click="companyConfirm(scope.row, 'failed')"
               >
                 认证失败
               </el-button>
             </div>
             <div v-else>
-              <el-button
-                type="danger"
-                size="small"
-                @click="cancelConfirm(scope.row)"
+              <el-popconfirm
+                title="确认取消该用户的企业身份?"
+                confirm-button-text="确认"
+                cancel-button-text="取消"
+                @confirm="cancelConfirm(scope.row)"
               >
-                取消认证
-              </el-button>
+                <template #reference>
+                  <el-button type="danger" size="small" class="mr-10">
+                    取消认证
+                  </el-button>
+                </template>
+              </el-popconfirm>
+
               <el-button
                 type="primary"
                 size="small"
@@ -81,7 +93,14 @@
             <el-input v-model="editData.legal_person" />
           </el-form-item>
           <el-form-item label="行业:" required prop="industry">
-            <el-input v-model="editData.industry" />
+            <el-select v-model="editData.industry">
+              <el-option
+                v-for="item in industry"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item label="联系电话:" required prop="phone">
             <el-input v-model="editData.phone" />
@@ -92,17 +111,36 @@
           </el-form-item>
         </el-form>
       </el-dialog>
+      <div class="mt-10 mb-10 flex" style="justify-content: right;">
+        <el-pagination
+          background
+          layout="total,prev, pager, next"
+          :page-size.sync="limit"
+          :current-page.sync="page"
+          :total="total"
+          @current-change="getData"
+          @prev-click="getData"
+          @next-click="getData"
+        />
+      </div>
     </div>
   </div>
 </template>
 <script>
 import { userManageData, conFirm } from '@/api/user.js'
+import { createNotice } from '@/api/notice.js'
+import { industrySort } from '@/data/industry.js'
 export default {
   data() {
     return {
+      headerStyle: { 'background-color': 'rgba(0,0,0,0.05)' },
+      industry: industrySort,
       data: [],
       editData: {},
       dialogTableVisible: false,
+      page: 1,
+      total: 0,
+      limit: 10,
       rules: {
         phone: [
           {
@@ -165,16 +203,29 @@ export default {
     }
   },
   mounted() {
-    userManageData(2, 1).then(data => {
-      this.data = data.gameList
-    })
+    this.getData()
   },
   methods: {
+    getData() {
+      userManageData(2, this.page).then(data => {
+        console.log(data)
+        this.data = data.gameList
+        this.total = data.total
+        this.limit = data.limit
+      })
+    },
     onSubmit() {
       this.$refs.form.validate(valid => {
         if (valid) {
           this.dialogTableVisible = false
-          console.log('提交')
+          conFirm(this.editData.openid, { ...this.editData, type: 2 }).then(
+            () => {
+              this.$message({
+                message: '修改成功',
+                type: 'success'
+              })
+            }
+          )
         }
       })
     },
@@ -183,7 +234,7 @@ export default {
       this.editData = { ...data }
     },
     cancelConfirm(scope) {
-      conFirm(scope.openid, { status: 3, type: 2 }).then(() => {
+      conFirm(scope.openid, { ...scope, status: 3, type: 2 }).then(() => {
         scope.status = 3
         this.$message({
           message: '修改成功',
@@ -200,8 +251,10 @@ export default {
             }
           }
         }).then(({ value }) => {
-          conFirm(scope.openid, { content: value }).then(() => {
-            scope.status = 2
+          createNotice({
+            content: JSON.stringify({ content: value, type: 'confirm' }),
+            openid: scope.openid
+          }).then(() => {
             this.$message({
               message: '提交成功',
               type: 'success'
@@ -209,7 +262,7 @@ export default {
           })
         })
       } else {
-        conFirm(scope.openid, { status: 1, type: 2 }).then(() => {
+        conFirm(scope.openid, { ...scope, status: 1, type: 2 }).then(() => {
           scope.status = 1
           this.$message({
             message: '提交成功',

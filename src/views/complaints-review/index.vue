@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-13 22:44:09
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-05-13 14:46:41
+ * @LastEditTime: 2022-05-14 17:21:06
 -->
 
 <template>
@@ -115,7 +115,8 @@
 </template>
 <script>
 import { getList, upDate } from '@/api/complain.js'
-// import { createNotice } from '@/api/notice'
+import { createNotice } from '@/api/notice'
+import { upDateScore } from '@/api/user.js'
 export default {
   data() {
     const validatePoint = (rule, value, callback) => {
@@ -180,26 +181,63 @@ export default {
     },
     onSubmit() {
       if (this.dialogStatus === 'pass') {
-        this.$refs.passForm.validate(valid => {
+        this.$refs.passForm.validate(async valid => {
           if (valid) {
-            upDate(this.dialogData.id, {
-              ...this.dialogData.id,
+            await upDate(this.dialogData.id, {
+              ...this.dialogData,
+              measure: `扣除信用分${this.measures.points}`,
+              img: JSON.stringify(this.dialogData.img),
               status: '3'
-            }).then(() => {
-              this.$message.success('提交成功！')
             })
+            await upDateScore(this.dialogData.toOpenid, {
+              score: 100 - this.measures.points,
+              type: this.dialogData.toType
+            })
+            await createNotice({
+              openid: this.dialogData.toOpenid,
+              content: JSON.stringify({
+                type: 'complain',
+                userType: this.dialogData.toType,
+                content: '您已被投诉',
+                id: this.dialogData.id,
+                name: this.dialogData.fromName
+              })
+            })
+            await createNotice({
+              openid: this.dialogData.fromOpenid,
+              content: JSON.stringify({
+                type: 'complain',
+                userType: this.dialogData.fromType,
+                content: '您已投诉成功！',
+                id: this.dialogData.id,
+                name: this.dialogData.toName
+              })
+            })
+            this.$message.success('提交成功！')
+            this.getData()
             this.dialogReasonVisible = false
           }
         })
       } else {
-        this.$refs.rejectForm.validate(valid => {
+        this.$refs.rejectForm.validate(async valid => {
           if (valid) {
             upDate(this.dialogData.id, {
-              ...this.dialogData.id,
+              ...this.dialogData,
+              img: JSON.stringify(this.dialogData.img),
               status: '4'
-            }).then(() => {
-              this.$message.success('提交成功！')
             })
+            await createNotice({
+              openid: this.dialogData.fromOpenid,
+              content: JSON.stringify({
+                type: 'complain',
+                userType: this.dialogData.fromType,
+                content: `投诉失败！${this.rejectReason.content}`,
+                id: this.dialogData.id,
+                name: this.dialogData.toName
+              })
+            })
+            this.getData()
+            this.$message.success('提交成功！')
             this.dialogRejectVisible = false
           }
         })

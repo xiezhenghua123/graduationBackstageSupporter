@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-13 22:44:07
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-05-13 20:41:00
+ * @LastEditTime: 2022-05-14 14:51:26
 -->
 
 <script>
@@ -70,6 +70,7 @@ export default {
           uploadBanner(data).then(() => {
             this.$message.success('上传成功！')
             this.getData()
+            this.dialogVisible = false
           })
         }
       })

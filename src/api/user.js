@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-27 18:38:13
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-04-27 20:29:03
+ * @LastEditTime: 2022-05-14 15:20:51
  */
 import api from './index'
 
@@ -21,4 +21,7 @@ const conFirm = (id, data) => {
   return api().put(`${id}/update`, data)
 }
 
-export { userManageData, conFirm }
+const upDateScore = (id, data) => {
+  return api().put(`${id}/updateScore`, data)
+}
+export { userManageData, conFirm, upDateScore}

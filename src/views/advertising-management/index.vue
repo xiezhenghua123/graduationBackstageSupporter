@@ -4,12 +4,12 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-13 22:44:07
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-05-14 14:51:26
+ * @LastEditTime: 2022-05-14 19:15:12
 -->
 
 <script>
 import { imageUpload } from '@/api/commonApi'
-import { uploadBanner, getBanList } from '@/api/banner'
+import { uploadBanner, getBanList, deleteBanner } from '@/api/banner'
 export default {
   data() {
     return {
@@ -59,6 +59,12 @@ export default {
     timeFormat(time) {
       return time.replace(/T/g, ' ').replace(/\.[\d]{6}Z/g, '')
     },
+    del(id) {
+      deleteBanner(id).then(() => {
+        this.$message.success('删除成功！')
+        this.getData()
+      })
+    },
     addBanner() {
       this.$refs.ref.validate(vaild => {
         if (vaild) {
@@ -100,6 +106,22 @@ export default {
       <el-table-column label="发布时间" min-width="160">
         <template #default="scope">
           {{ timeFormat(scope.row.created_at) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="120">
+        <template #default="scope">
+          <el-popconfirm
+            title="确认删除?"
+            confirm-button-text="确认"
+            cancel-button-text="取消"
+            @confirm="del(scope.row.id)"
+          >
+            <template #reference>
+              <el-button type="danger" size="mini">
+                删除
+              </el-button>
+            </template>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>

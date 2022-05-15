@@ -4,7 +4,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-13 22:44:09
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-05-14 17:21:06
+ * @LastEditTime: 2022-05-15 17:40:15
 -->
 
 <template>
@@ -116,7 +116,7 @@
 <script>
 import { getList, upDate } from '@/api/complain.js'
 import { createNotice } from '@/api/notice'
-import { upDateScore } from '@/api/user.js'
+import { upDateScore, getStudentData, getCompanyData } from '@/api/user.js'
 export default {
   data() {
     const validatePoint = (rule, value, callback) => {
@@ -183,14 +183,27 @@ export default {
       if (this.dialogStatus === 'pass') {
         this.$refs.passForm.validate(async valid => {
           if (valid) {
+            let measureText
+            if (this.measures.points) {
+              measureText = `扣除信用分${this.measures.points}`
+            } else {
+              measureText = '空'
+            }
             await upDate(this.dialogData.id, {
               ...this.dialogData,
-              measure: `扣除信用分${this.measures.points}`,
+              measure: measureText,
               img: JSON.stringify(this.dialogData.img),
               status: '3'
             })
+            let score
+            if (this.dialogData.toType == 1) {
+              score = (await getStudentData(this.dialogData.toId)).credit_score
+            } else {
+              score = (await getCompanyData(this.dialogData.toId)).credit_score
+                .credit_score
+            }
             await upDateScore(this.dialogData.toOpenid, {
-              score: 100 - this.measures.points,
+              score: score - this.measures.points,
               type: this.dialogData.toType
             })
             await createNotice({

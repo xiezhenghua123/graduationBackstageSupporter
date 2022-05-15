@@ -5,7 +5,7 @@
  * @Author: ZhenghuaXie
  * @Date: 2022-04-15 22:43:55
  * @LastEditors: ZhenghuaXie
- * @LastEditTime: 2022-05-13 20:53:45
+ * @LastEditTime: 2022-05-15 20:22:49
 -->
 <template>
   <div class="bg-fff height-100">
@@ -14,7 +14,11 @@
         <el-table-column label="职位ID" prop="id" />
         <el-table-column label="企业" prop="employer" />
         <el-table-column label="标题" prop="content" />
-        <el-table-column label="薪酬" prop="salary" />
+        <el-table-column label="薪酬" prop="salary">
+          <template #default="scope">
+            {{ salary(scope.row.salary) }}
+          </template>
+        </el-table-column>
         <el-table-column label="应聘者">
           <template slot-scope="scope">
             <el-button
@@ -39,7 +43,7 @@
               :disabled="scope.row.status == 0"
               @click="removeJob(scope.row)"
             >
-              {{ scope.row.status == 0?'已下架':'下架' }}
+              {{ scope.row.status == 0 ? '已下架' : '下架' }}
             </el-button>
           </template>
         </el-table-column>
@@ -94,6 +98,9 @@ export default {
     this.getList()
   },
   methods: {
+    salary(salary) {
+      return `${JSON.parse(salary).min}k-${JSON.parse(salary).max}k`
+    },
     getStatus(status) {
       switch (status) {
         case '0':
@@ -133,9 +140,6 @@ export default {
           console.log(item.salary)
           return {
             ...item,
-            salary: `${JSON.parse(item.salary).min}k-${
-              JSON.parse(item.salary).max
-            }k`,
             employer: item.company_name
           }
         })
